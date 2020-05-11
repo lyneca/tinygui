@@ -1,7 +1,7 @@
 use crate::screen::Screen;
-use crate::input_handler::Input;
+use crate::buttons::ButtonSet;
 
 pub trait View {
-    fn update(&mut self, input: Input);
+    fn update(&mut self, buttons: &mut ButtonSet);
     fn render(&self, screen: &mut Screen);
 }

@@ -3,15 +3,19 @@ extern crate embedded_graphics;
 use rppal::i2c::I2c;
 use ssd1306::{Builder, mode::GraphicsMode, interface::i2c::I2cInterface};
 use embedded_graphics::fonts::{Font,Font6x8};
-use embedded_graphics::coord::Coord;
 use embedded_graphics::prelude::*;
 use embedded_graphics::image::Image1BPP;
-use embedded_graphics::primitives::Rect;
-use embedded_graphics::primitives::Line;
+use embedded_graphics::drawable::Pixel;
+use embedded_graphics::pixelcolor::PixelColorU8;
 use embedded_graphics::Drawing;
 
+const DEFAULT_WIDTH: i32 = 128;
+const DEFAULT_HEIGHT: i32 = 64;
+
 pub struct Screen {
-    display: GraphicsMode<I2cInterface<I2c>>
+    pub display: GraphicsMode<I2cInterface<I2c>>,
+    width: i32,
+    height: i32
 }
 
 impl Screen {
@@ -20,15 +24,19 @@ impl Screen {
         i2c.set_slave_address(0x3c).expect("Could not select device");
 
         Screen {
-            display: Builder::new().connect_i2c(i2c).into()
+            display: Builder::new().connect_i2c(i2c).into(),
+            width: DEFAULT_WIDTH,
+            height: DEFAULT_HEIGHT
         }
     }
-    pub fn draw_rect(&mut self, x: u8, y: u8, width: u8, height: u8) {
-        self.display.draw(Rect::new(
-                Coord::new(x as i32, y as i32),
-                Coord::new((x + width) as i32, (y + height) as i32))
-            .into_iter())
+
+    pub fn set_shape(&mut self, width: i32, height: i32) {
+        self.width = width;
+        self.height = height;
     }
+
+    pub fn get_width(&self) -> i32 { self.width }
+    pub fn get_height(&self) -> i32 { self.height }
 
     pub fn clear(&mut self) {
         self.display.clear()

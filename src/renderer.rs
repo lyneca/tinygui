@@ -1,4 +1,4 @@
-use crate::input_handler::InputHandler;
+use crate::buttons::ButtonSet;
 use crate::view::View;
 use crate::screen::Screen;
 
@@ -15,6 +15,10 @@ impl Renderer {
         }
     }
 
+    pub fn add_view(&mut self, view: Box<dyn View>) {
+        self.views.push(view)
+    }
+
     pub fn render(&mut self, screen: &mut Screen) {
         match self.views.get(self.current) {
             Some(view) => view.render(screen),
@@ -27,16 +31,17 @@ impl Renderer {
         }
     }
 
-    pub fn update(&mut self, input_handler: &mut InputHandler) {
-        let input = input_handler.get_input();
+    pub fn update(&mut self, buttons: &mut ButtonSet) {
+        buttons.poll_all();
         match self.views.get_mut(self.current) {
-            Some(view) => view.update(input),
+            Some(view) => view.update(buttons),
             None => {
                 self.current = 0;
                 if let Some(view) = self.views.get_mut(0) {
-                    view.update(input)
+                    view.update(buttons)
                 }
             }
         }
+        buttons.flush();
     }
 }

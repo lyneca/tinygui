@@ -1,34 +1,35 @@
-mod view;
-mod screen;
-mod renderer;
-mod input_handler;
-
-use rppal::i2c::I2c;
+pub mod view;
+pub mod views;
+pub mod shape;
+pub mod screen;
+pub mod renderer;
+pub mod buttons;
 
 use renderer::Renderer;
 use screen::Screen;
-use input_handler::InputHandler;
+use buttons::ButtonSet;
 
 pub struct GUI {
-    renderer: Renderer,
-    screen: Screen,
-    input_handler: InputHandler
+    pub renderer: Renderer,
+    pub screen: Screen,
+    pub buttons: ButtonSet
 }
 
 impl GUI {
-    fn run(&mut self) {
+    pub fn new() -> GUI {
+        GUI {
+            renderer: Renderer::new(),
+            screen: Screen::new(),
+            buttons: ButtonSet::default_pins()
+        }
+    }
+    pub fn run(&mut self) {
+        self.screen.display.init().expect("Could not initialise screen.");
         loop {
             self.screen.clear();
+            self.renderer.update(&mut self.buttons);
             self.renderer.render(&mut self.screen);
             self.screen.flush();
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
     }
 }
