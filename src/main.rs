@@ -1,13 +1,19 @@
 use std::collections::HashMap;
 use std::env;
 use std::fs::File;
-use std::io::Read;
+use std::io::{Read, Write};
+use std::path::Path;
+use std::thread;
+use std::time::{Duration, SystemTime};
 
+extern crate chrono;
+use chrono::offset::Local;
+use chrono::DateTime;
+use rascam::{info, SimpleCamera};
 use reqwest::blocking::Client;
 use serde::Deserialize;
 use serde_json::from_str;
 
-use tinygui::screen::Screen;
 use tinygui::view::{View, ViewSpawner};
 use tinygui::views::{BoidsViewBuilder, Menu, MenuItem};
 use tinygui::GUI;
@@ -37,9 +43,32 @@ impl ViewSpawner for SlackMenuSpawner {
     }
 }
 
+fn take_photo() {
+    let info = info().unwrap();
+    if info.cameras.len() < 1 {
+        return;
+    }
+    let mut camera = SimpleCamera::new(info.cameras[0].clone()).unwrap();
+    camera.activate().unwrap();
+
+    thread::sleep(Duration::from_millis(2000));
+
+    let photo = camera.take_one().unwrap();
+    let time: DateTime<Local> = SystemTime::now().into();
+    std::fs::create_dir_all("pics");
+    File::create(Path::new(
+        format!("pics/{}.jpg", time.format("%d-%m-%Y_%T")).as_str(),
+    ))
+    .unwrap()
+    .write_all(&photo)
+    .unwrap();
+}
+
 fn main() {
+    // New GUI
     let mut gui = GUI::new();
 
+    // Slack statuses list
     let mut file = File::open("statuses.json").expect("Could not find statuses.json");
     let mut contents = String::new();
     file.read_to_string(&mut contents)
@@ -47,16 +76,26 @@ fn main() {
     let slack_status_menu = SlackMenuSpawner {
         entries: from_str(contents.as_str()).expect("Could not parse statuses.json"),
     };
+
+    // Main menu
     let mut main_menu = Menu::new();
+
+    // Boids!
     let boids_builder = BoidsViewBuilder {};
+
     main_menu.add_entry(MenuItem::TextToView(
         "Set Slack Status".to_owned(),
         Box::new(slack_status_menu),
+    ));
+    main_menu.add_entry(MenuItem::TextToFunc(
+        "Take Photo".to_owned(),
+        Box::new(take_photo),
     ));
     main_menu.add_entry(MenuItem::TextToView(
         "Boids".to_owned(),
         Box::new(boids_builder),
     ));
+
     gui.renderer.push_view(Box::new(main_menu));
     gui.run();
 }
