@@ -2,12 +2,6 @@ extern crate embedded_graphics;
 
 use rppal::i2c::I2c;
 use ssd1306::{Builder, mode::GraphicsMode, interface::i2c::I2cInterface};
-use embedded_graphics::fonts::{Font,Font6x8};
-use embedded_graphics::prelude::*;
-use embedded_graphics::image::Image1BPP;
-use embedded_graphics::drawable::Pixel;
-use embedded_graphics::pixelcolor::PixelColorU8;
-use embedded_graphics::Drawing;
 
 const DEFAULT_WIDTH: i32 = 128;
 const DEFAULT_HEIGHT: i32 = 64;

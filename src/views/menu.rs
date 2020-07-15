@@ -1,11 +1,21 @@
-use crate::view::View;
+use crate::view::{View, ViewSpawner, UpdateResult, UpdateResult::*};
 use crate::screen::Screen;
 use crate::buttons::ButtonSet;
 use crate::shape::{Drawable,Text,Rect,Line,Bitmap};
 use std::cmp::max;
-use embedded_graphics::Drawing;
 
 const ENTRY_HEIGHT: i32 = 13;
+
+const ARROW_UP: &[u8] = &[
+    0b00000000,
+    0b00100000,
+    0b01110000,
+    0b10101000,
+    0b00100000,
+    0b00100000,
+    0b00100000,
+    0b00000000,
+];
 
 const ARROW_DOWN: &[u8] = &[
     0b00000000,
@@ -20,12 +30,12 @@ const ARROW_DOWN: &[u8] = &[
 
 pub trait CustomMenuEntry {
     fn render(&self, x: i32, y: i32, width: i32, height: i32, selected: bool, screen: &mut Screen);
-    fn activate(&self) -> Option<&Box<dyn View>>;
+    fn activate(&self) -> Option<UpdateResult>;
 }
 
 pub enum MenuItem {
     Custom(Box<dyn CustomMenuEntry>),
-    TextToView(String, Box<dyn View>),
+    TextToView(String, Box<dyn ViewSpawner>),
     TextToFunc(String, Box<dyn Fn()>)
 }
 
@@ -57,7 +67,7 @@ impl Menu {
 }
 
 impl View for Menu {
-    fn update(&mut self, buttons: &mut ButtonSet) {
+    fn update(&mut self, buttons: &mut ButtonSet) -> Option<UpdateResult> {
         // navigating the menu
         if buttons.down.was_pressed() {
             if self.selected == self.entries.len() - 1 {
@@ -85,7 +95,7 @@ impl View for Menu {
         }
 
         if self.selected == self.entries.len() - 1 {
-            self.first_shown = max(0, self.selected - 3);
+            self.first_shown = max(0, match self.selected.checked_sub(3) { Some(x) => x, None => 0 });
         } else if self.selected == 0 {
             self.first_shown = 0;
         } else if self.selected >= self.first_shown + 2 {
@@ -101,14 +111,18 @@ impl View for Menu {
         // selecting options
         if buttons.a.was_pressed() {
             use MenuItem::*;
-            match &self.entries[self.selected] {
+            match &mut self.entries[self.selected] {
                 Custom(entry) => entry.activate(),
-                TextToView(_, view) => Some(view),
+                TextToView(_, spawner) => Some(NewView(spawner.spawn())),
                 TextToFunc(_, func) => {
                     func();
                     None
                 }
-            };
+            }
+        } else if buttons.b.was_pressed() {
+            Some(Back)
+        } else {
+            None
         }
     }
 
@@ -143,10 +157,49 @@ impl View for Menu {
             .at(0, 13 * 4)
             .draw(screen);
 
-        // draw arrow
-        Bitmap::new(ARROW_DOWN, 5, 8)
-            .at(screen.get_width() - 8, 4 * 13 + 2)
-            .draw(screen);
+        if !self.title.is_empty() {
+            Text::new(self.title.clone())
+                .at(3, 4 * 13 + 3)
+                .draw(screen);
+        } else {
+            for i in 0..15 {
+                for j in 0..4 {
+                    Line::new(9, 9)
+                        .at(i * 9 + j - 4, 13 * 4 + 1)
+                        .draw(screen);
+                }
+            }
+        }
+
+        // draw up arrow
+        if self.first_shown > 0
+            && self.entries.len() > 4 {
+            // draw black rectangle as background
+            Rect::new(10, 11)
+                .fill(Some(0))
+                .at(0, 4 * 13)
+                .draw(screen);
+
+            // draw actual arrow
+            Bitmap::new(ARROW_UP, 5, 8)
+                .at(3, 4 * 13 + 2)
+                .draw(screen);
+        }
+
+        // draw down arrow
+        if self.first_shown < self.entries.len() - 4
+            && self.entries.len() > 4 {
+            // draw black rectangle as background
+            Rect::new(10, 11)
+                .fill(Some(0))
+                .at(screen.get_width() - 11, 4 * 13)
+                .draw(screen);
+
+            // draw actual arrow
+            Bitmap::new(ARROW_DOWN, 5, 8)
+                .at(screen.get_width() - 8, 4 * 13 + 2)
+                .draw(screen);
+        }
 
         // draw boundary rectangle
         Rect::new(screen.get_width() - 1, screen.get_height() - 1)
@@ -154,6 +207,4 @@ impl View for Menu {
             .draw(screen);
     }
 }
-
-
 

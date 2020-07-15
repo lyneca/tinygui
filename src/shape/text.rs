@@ -1,7 +1,7 @@
 use crate::{screen::Screen, shape::{to_color, Drawable}};
 use embedded_graphics::prelude::*;
 use embedded_graphics::coord::Coord;
-use embedded_graphics::fonts::{Font,Font6x8,font_builder::{FontBuilderConf,FontBuilderIterator}};
+use embedded_graphics::fonts::{Font,Font6x8};
 
 pub struct Text {
     x: i32, y: i32,

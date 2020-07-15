@@ -1,4 +1,4 @@
-use crate::{screen::Screen, shape::{to_color, Drawable}};
+use crate::{screen::Screen, shape::Drawable};
 use embedded_graphics::prelude::*;
 use embedded_graphics::coord::Coord;
 use embedded_graphics::image::Image1BPP;

@@ -1,7 +1,7 @@
-use crate::view::View;
+use crate::view::{View, UpdateResult};
 use crate::screen::Screen;
 use crate::buttons::ButtonSet;
-use crate::shape::{Drawable,Text,Rect,Section};
+use crate::shape::{Drawable,Text,Section};
 
 pub struct HelloWorld {
     root: Box<dyn Drawable>
@@ -21,7 +21,7 @@ impl HelloWorld {
 }
 
 impl View for HelloWorld {
-    fn update(&mut self, buttons: &mut ButtonSet) {}
+    fn update(&mut self, buttons: &mut ButtonSet) -> Option<UpdateResult> { None }
     fn render(&self, screen: &mut Screen) {
         self.root.draw(screen);
     }
