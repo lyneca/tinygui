@@ -1,3 +1,5 @@
+use std::any::Any;
+
 use crate::view::{View, UpdateResult};
 use crate::screen::Screen;
 use crate::buttons::ButtonSet;
@@ -25,6 +27,7 @@ impl View for HelloWorld {
     fn render(&self, screen: &mut Screen) {
         self.root.draw(screen);
     }
+    fn result(&mut self,  result: Box<dyn Any>) {}
 }
 
 

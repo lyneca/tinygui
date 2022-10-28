@@ -15,7 +15,7 @@ use serde::Deserialize;
 use serde_json::from_str;
 
 use tinygui::view::{View, ViewSpawner};
-use tinygui::views::{BoidsViewBuilder, Menu, MenuItem};
+use tinygui::views::{BoidsViewBuilder, Menu, MenuItem, TextInput};
 use tinygui::GUI;
 
 const URL: &str = "https://slack.com/api/users.profile.set";
@@ -83,6 +83,8 @@ fn main() {
     // Boids!
     let boids_builder = BoidsViewBuilder {};
 
+    let text_spawner = TextInput::spawner();
+
     main_menu.add_entry(MenuItem::TextToView(
         "Set Slack Status".to_owned(),
         Box::new(slack_status_menu),
@@ -95,6 +97,9 @@ fn main() {
         "Boids".to_owned(),
         Box::new(boids_builder),
     ));
+    main_menu.add_entry(MenuItem::TextToView(
+        "Test Keyboard".to_owned(),
+        Box::new(text_spawner)));
 
     gui.renderer.push_view(Box::new(main_menu));
     gui.run();

@@ -2,6 +2,7 @@ use crate::view::{View, ViewSpawner, UpdateResult, UpdateResult::*};
 use crate::screen::Screen;
 use crate::buttons::ButtonSet;
 use crate::shape::{Drawable,Text,Rect,Line,Bitmap};
+use std::any::Any;
 use std::cmp::max;
 
 const ENTRY_HEIGHT: i32 = 13;
@@ -120,7 +121,7 @@ impl View for Menu {
                 }
             }
         } else if buttons.b.was_pressed() {
-            Some(Back)
+            Some(Back(None))
         } else {
             None
         }
@@ -187,8 +188,7 @@ impl View for Menu {
         }
 
         // draw down arrow
-        if self.first_shown < self.entries.len() - 4
-            && self.entries.len() > 4 {
+        if self.entries.len() > 4 && self.first_shown < self.entries.len() - 4 {
             // draw black rectangle as background
             Rect::new(10, 11)
                 .fill(Some(0))
@@ -206,5 +206,6 @@ impl View for Menu {
             .at(0, 0)
             .draw(screen);
     }
+    fn result(&mut self,  result: Box<dyn Any>) {}
 }
 

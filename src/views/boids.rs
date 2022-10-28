@@ -5,6 +5,7 @@ use crate::view::{UpdateResult, UpdateResult::*, View, ViewSpawner};
 use na::{distance, Point2, Rotation2, Vector2};
 use nalgebra as na;
 use rand::Rng;
+use std::any::Any;
 use std::f32::consts::PI;
 
 const BOID_DISTANCE: f32 = 10.0;
@@ -198,7 +199,7 @@ impl BoidsView {
 impl View for BoidsView {
     fn update(&mut self, buttons: &mut ButtonSet) -> Option<UpdateResult> {
         if buttons.b.was_pressed() {
-            return Some(Back);
+            return Some(Back(None));
         }
         let last_boids = self.boids.clone();
         for boid in &mut self.boids {
@@ -217,4 +218,5 @@ impl View for BoidsView {
         // .at(0, 0)
         // .draw(screen);
     }
+    fn result(&mut self,  result: Box<dyn Any>) {}
 }

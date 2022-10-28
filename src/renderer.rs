@@ -39,7 +39,15 @@ impl Renderer {
         if let Some(result) = result_option {
             match result {
                 NewView(view) => self.push_view(view),
-                Back => { if self.views.len() > 1 { self.pop_view() }; }
+                Back(None) => { if self.views.len() > 1 { self.pop_view(); }; }
+                Back(Some(result)) => {
+                    if self.views.len() > 1 {
+                        self.pop_view();
+                        if let Some(view) = self.views.last_mut() {
+                            view.result(result.get());
+                        }
+                    }
+                }
             };
         }
 
